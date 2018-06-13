@@ -1,0 +1,76 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'game'
+            keyPassword 'anou1305'
+            storeFile file('D:/chebasign.keystore')
+            storePassword 'anou1305'
+        }
+    }
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
+
+    defaultConfig {
+        applicationId "com.aou.cheba"
+        minSdkVersion 15
+        targetSdkVersion 27
+        versionCode 3
+        versionName "3.1"
+
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.config
+        }
+    }
+//noinspection all
+    task copyNativeLibs(type: Copy) {
+        // third party lib so
+        from(new File(projectDir, 'libs')) { include 'armeabi.so', 'armeabi-v7a.so' }
+        into new File(buildDir, 'native-libs')
+    }
+    tasks.withType(JavaCompile) {
+        compileTask ->
+            //noinspection all
+            compileTask.dependsOn copyNativeLibs
+    }
+    //noinspection all
+    tasks.withType(com.android.build.gradle.tasks.PackageApplication) {
+        pkgTask ->
+            new HashSet().add(new File(buildDir, 'native-libs'))
+
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation name: 'SMSSDKGUI-2.1.1', ext: 'aar'
+    implementation name: 'SMSSDK-2.1.1', ext: 'aar'
+    implementation project(':sharesdk_demo')
+    implementation project(':PushSDK')
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    implementation 'com.android.support:appcompat-v7:27.0.0'
+    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'net.qiujuer.genius:blur:2.0.0'
+    implementation 'com.squareup.okio:okio:1.13.0'
+    implementation 'com.android.support:multidex:1.0.1'
+
+}
